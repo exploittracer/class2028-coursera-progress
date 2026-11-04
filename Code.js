@@ -1,6 +1,5 @@
 function sendEmailReminders(){
 
-  const emailSubject = 'Google Coursera Progress';
 
   // Class 2028 - Google Courses Progress spreadsheet
   const spreadsheet = getSpreadSheet();
@@ -9,7 +8,42 @@ function sendEmailReminders(){
 
   let progressDetails = sheet.getDataRange().getValues();
 
-  // Capture the courses titles and modules
+  let courseModuleArray = getCoursesAndModules(progressDetails);
+
+  for (i = 2; i < progressDetails.length; i++){
+    if (progressDetails[i][4] == ""){
+
+      const emailSubject = 'Google Coursera Progress';
+      const fullName = `${progressDetails[i][1].trim()} ${progressDetails[i][2].trim()}`;
+      const pnEmailAddress = progressDetails[i][3];
+      const noOfCertificates = progressDetails[i][5];
+      const certificateSubmittedDetails = []
+      let certificateStatus = "";
+
+      console.log(`${fullName} - ${noOfCertificates} certificates submitted.`)
+
+      for (j = 6; j < progressDetails[i].length; j++){
+        if (progressDetails[i][j] != ""){
+          let certificateValue = progressDetails[i][j].toString();
+          certificateStatus =`${courseModuleArray[j-6]} (with ${certificateValue.toUpperCase()})`
+        }
+        else {
+          certificateStatus = `${courseModuleArray[j-6]}`
+        }
+        
+        certificateSubmittedDetails.push(certificateStatus);
+      }
+
+      const emailBody = sendCertificateSubmittedDetails(fullName, noOfCertificates, certificateSubmittedDetails);
+
+      sendEmailBasic(pnEmailAddress, emailSubject, emailBody);
+    }
+  }
+}
+
+// Capture the courses titles and modules
+function getCoursesAndModules(progressDetails){
+
   let isCourseTitlePresent = false;
   let courseTitle = "";
   let moduleTitle = "";
@@ -20,39 +54,22 @@ function sendEmailReminders(){
       isCourseTitlePresent = true;
       courseTitle = progressDetails[0][i];
       moduleTitle = progressDetails[1][i]
-      // console.log(progressDetails[0][i]);
-      // console.log(progressDetails[1][i]);
     }
+
     else if (progressDetails[0][i] == "" && isCourseTitlePresent == true){
       moduleTitle = progressDetails[1][i]
-      // console.log(courseTitle);
-      // console.log(progressDetails[1][i]);
 
-    } else if (progressDetails[0][i] != "" && isCourseTitlePresent == true){
+    } 
+    
+    else if (progressDetails[0][i] != "" && isCourseTitlePresent == true){
       courseTitle = progressDetails[0][i]
       moduleTitle = progressDetails[1][i]
-      // console.log(progressDetails[0][i]);
-      // console.log(progressDetails[1][i]);
     }
+
     if (courseTitle != ""){
-      // console.log(`${courseTitle} - ${moduleTitle}`);
       courseModuleArray.push(`${courseTitle} - ${moduleTitle}`);
     }
-
   }
 
-  console.log(courseModuleArray);
-
-
-  // for (i = 2; i < progressDetails.length; i++){
-  //   if (progressDetails[i][4] != "No access"){
-  //     const fullName = `${progressDetails[i][1].trim()} ${progressDetails[i][2].trim()}`;
-  //     const pnEmailAddress = progressDetails[i][3];
-  //     const noOfCertificates = progressDetails[i][5];
-
-  //     const emailBody = sendNoOfCertReminder(fullName, noOfCertificates);
-
-  //     sendEmailBasic(pnEmailAddress, emailSubject, emailBody);
-  //   }
-  // }
+  return courseModuleArray;
 }
