@@ -147,3 +147,7 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# Google Apps Script
+.clasp.json
+DoNotUpload.js
